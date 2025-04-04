@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Runner Game</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        canvas { background: #eee; display: block; margin: 20px auto; }
+        #winnerMessage {
+            display: none;
+            color: red;
+            font-size: 32px;
+            font-weight: bold;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .game-container {
+            position: relative;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <h1>QR Runner Game</h1>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="400" height="200"></canvas>
+        <p id="winnerMessage">You are a winner!</p>
+    </div>
+    <p id="score">Score: 50</p>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const winnerMessage = document.getElementById("winnerMessage");
+        
+        let redSquare = { x: 50, y: 150, size: 20, dy: 0, gravity: 0.5, jumpPower: -8 };
+        let obstacles = [];
+        let collectibles = [];
+        let score = 50;
+        let gameRunning = true;
+        
+        function spawnObstacleOrCollectible() {
+            if (!gameRunning) return;
+            let isObstacle = Math.random() > 0.5;
+            let yPosition = Math.random() > 0.5 ? 150 : 150;
+            
+            if (isObstacle) {
+                obstacles.push({ x: 400, y: yPosition, size: 10 });
+            } else {
+                collectibles.push({ x: 400, y: yPosition, size: 10 });
+            }
+        }
+        
+        function updateGame() {
+            if (!gameRunning) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Red Square Physics
+            redSquare.y += redSquare.dy;
+            redSquare.dy += redSquare.gravity;
+            if (redSquare.y > 150) redSquare.y = 150;
+            
+            // Draw Red Square
+            ctx.fillStyle = "red";
+            ctx.fillRect(redSquare.x, redSquare.y, redSquare.size, redSquare.size);
+            
+            // Update and Draw Obstacles
+            ctx.fillStyle = "black";
+            obstacles.forEach((obstacle, index) => {
+                obstacle.x -= 3;
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.size, obstacle.size);
+                if (obstacle.x < -10) obstacles.splice(index, 1);
+                if (
+                    redSquare.x < obstacle.x + obstacle.size &&
+                    redSquare.x + redSquare.size > obstacle.x &&
+                    redSquare.y < obstacle.y + obstacle.size &&
+                    redSquare.y + redSquare.size > obstacle.y
+                ) {
+                    score -= 5;
+                    obstacles.splice(index, 1);
+                }
+            });
+            
+            // Update and Draw Collectibles
+            ctx.fillStyle = "yellow";
+            collectibles.forEach((collectible, index) => {
+                collectible.x -= 3;
+                ctx.fillRect(collectible.x, collectible.y, collectible.size, collectible.size);
+                if (collectible.x < -10) collectibles.splice(index, 1);
+                if (
+                    redSquare.x < collectible.x + collectible.size &&
+                    redSquare.x + redSquare.size > collectible.x &&
+                    redSquare.y < collectible.y + collectible.size &&
+                    redSquare.y + redSquare.size > collectible.y
+                ) {
+                    score += 5;
+                    collectibles.splice(index, 1);
+                }
+            });
+            
+            document.getElementById("score").innerText = "Score: " + score;
+            if (score >= 100) {
+                gameRunning = false;
+                winnerMessage.style.display = "block";
+                return;
+            }
+            
+            requestAnimationFrame(updateGame);
+        }
+        
+        document.addEventListener("keydown", () => {
+            if (redSquare.y === 150) redSquare.dy = redSquare.jumpPower;
+        });
+        
+        function startSpawning() {
+            setInterval(spawnObstacleOrCollectible, Math.random() * 1000 + 1000); // Random interval between 1-3 seconds
+        }
+        
+        startSpawning();
+        updateGame();
+    </script>
+</body>
+</html>
