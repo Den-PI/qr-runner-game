@@ -21,6 +21,22 @@
             position: relative;
             display: inline-block;
         }
+        #jumpButton {
+            background-color: red; /* Changed to red */
+            border: none;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 18px;
+            border-radius: 50%;
+            cursor: pointer;
+            position: absolute;
+            top: 300px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
     </style>
 </head>
 <body>
@@ -28,12 +44,14 @@
     <div class="game-container">
         <canvas id="gameCanvas" width="400" height="200"></canvas>
         <p id="winnerMessage">You are a winner!</p>
+        <button id="jumpButton">Jump</button>
     </div>
     <p id="score">Score: 50</p>
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         const winnerMessage = document.getElementById("winnerMessage");
+        const jumpButton = document.getElementById("jumpButton");
         
         let redSquare = { x: 50, y: 150, size: 20, dy: 0, gravity: 0.5, jumpPower: -8 };
         let obstacles = [];
@@ -44,7 +62,7 @@
         function spawnObstacleOrCollectible() {
             if (!gameRunning) return;
             let isObstacle = Math.random() > 0.5;
-            let yPosition = Math.random() > 0.5 ? 150 : 150;
+            let yPosition = Math.random() > 0.5 ? 150 : 120;
             
             if (isObstacle) {
                 obstacles.push({ x: 400, y: yPosition, size: 10 });
@@ -101,7 +119,7 @@
             });
             
             document.getElementById("score").innerText = "Score: " + score;
-            if (score >= 1000) {
+            if (score >= 100) {
                 gameRunning = false;
                 winnerMessage.style.display = "block";
                 return;
@@ -111,6 +129,10 @@
         }
         
         document.addEventListener("keydown", () => {
+            if (redSquare.y === 150) redSquare.dy = redSquare.jumpPower;
+        });
+        
+        jumpButton.addEventListener("click", () => {
             if (redSquare.y === 150) redSquare.dy = redSquare.jumpPower;
         });
         
